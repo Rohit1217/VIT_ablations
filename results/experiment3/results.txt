@@ -1,0 +1,4 @@
+     Pooling |   Best Val Acc |   Train Time (s)
+------------------------------------------------
+   CLS token |         0.8638 |           1555.6
+   Mean pool |         0.8653 |           1349.0

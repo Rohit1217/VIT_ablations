@@ -3,8 +3,7 @@
 *.pth
 
 # Results (plots + logs — regenerable)
-results/
-*.png
+
 
 # Dataset
 cifar10_dataset/
