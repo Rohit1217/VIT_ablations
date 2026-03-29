@@ -15,7 +15,6 @@ Vision Transformer (ViT) and ResNet trained from scratch on CIFAR-10, with syste
 | 4 | Positional embedding | Learnable, Sinusoidal, None |
 | 5 | Patch overlap | On / Off |
 | 6 | Attention entropy analysis | — |
-| 8 | CLS token position | Prepend vs Append |
 
 ## Setup
 ```bash
