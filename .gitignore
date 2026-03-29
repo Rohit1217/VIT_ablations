@@ -27,6 +27,7 @@ torch_inductor_cache/
 # IDE
 .vscode/
 .idea/
+.claude
 
-*md
+CLAUDE.md
 experiment8.py
