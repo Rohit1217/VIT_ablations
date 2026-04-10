@@ -31,6 +31,7 @@ num_workers=cfg.NUM_WORKERS
 data_frac=cfg.DATA_FRAC
 
 def make_vit(pos_embed_type):
+    # pos_embed_type: "Learn" (learnable), "Sin" (sinusoidal), "None" (no positional encoding)
     vit_cifar=VIT(image_size=cfg.VIT_IMAGE_SIZE,patch_size=cfg.VIT_PATCH_SIZE,
                   num_classes=cfg.VIT_NUM_CLASSES,num_blocks=cfg.VIT_NUM_BLOCKS,embed_dim=cfg.VIT_EMBED_DIM,
                   n_heads=cfg.VIT_N_HEADS,hidden_dim=cfg.VIT_HIDDEN_DIM,
@@ -45,6 +46,8 @@ def make_vit(pos_embed_type):
 
 RESULTS_DIR = "results/experiment4"
 
+# Experiment 4: Positional encoding ablation.
+# Compares learnable vs sinusoidal vs no positional embeddings.
 def run(pos_embed_type_list=["Learn","Sin","None"]):
 
     os.makedirs(RESULTS_DIR, exist_ok=True)

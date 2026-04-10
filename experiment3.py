@@ -31,6 +31,8 @@ num_workers=cfg.NUM_WORKERS
 data_frac=cfg.DATA_FRAC
 
 def make_vit(use_cls):
+    # use_cls=True  → standard CLS token classification
+    # use_cls=False → mean pooling over all patch tokens
     vit_cifar=VIT(image_size=cfg.VIT_IMAGE_SIZE,patch_size=cfg.VIT_PATCH_SIZE,
                   num_classes=cfg.VIT_NUM_CLASSES,num_blocks=cfg.VIT_NUM_BLOCKS,embed_dim=cfg.VIT_EMBED_DIM,
                   n_heads=cfg.VIT_N_HEADS,hidden_dim=cfg.VIT_HIDDEN_DIM,
@@ -45,6 +47,8 @@ def make_vit(use_cls):
 
 RESULTS_DIR = "results/experiment3"
 
+# Experiment 3: CLS token vs mean pooling for classification.
+# Trains two ViT variants; all other hyperparams identical.
 def run(use_cls_list=[True,False]):
 
     os.makedirs(RESULTS_DIR, exist_ok=True)

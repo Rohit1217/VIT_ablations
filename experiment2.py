@@ -31,6 +31,7 @@ num_workers=cfg.NUM_WORKERS
 data_frac=cfg.DATA_FRAC
 
 def make_vit(patch_size):
+    # Build ViT with the given patch_size; all other hyperparams from config
     vit_cifar=VIT(image_size=cfg.VIT_IMAGE_SIZE,patch_size=patch_size,
                   num_classes=cfg.VIT_NUM_CLASSES,num_blocks=cfg.VIT_NUM_BLOCKS,embed_dim=cfg.VIT_EMBED_DIM,
                   n_heads=cfg.VIT_N_HEADS,hidden_dim=cfg.VIT_HIDDEN_DIM,
@@ -44,8 +45,10 @@ def make_vit(patch_size):
 
 
 RESULTS_DIR = "results/experiment2"
-NUM_TRIALS = 5
+NUM_TRIALS = 5  # run each patch size multiple times to get mean/std accuracy
 
+# Experiment 2: Effect of patch size on ViT accuracy and training time.
+# Trains ViT at patch sizes 4, 8, 16 for NUM_TRIALS each; all other params fixed.
 def run(patch_size_list=[4,8,16]):
 
     os.makedirs(RESULTS_DIR, exist_ok=True)

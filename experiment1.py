@@ -31,6 +31,7 @@ num_workers=cfg.NUM_WORKERS
 data_frac=cfg.DATA_FRAC
 
 def make_vit():
+    # Build ViT with default hyperparams from config
     vit_cifar=VIT(image_size=cfg.VIT_IMAGE_SIZE,patch_size=cfg.VIT_PATCH_SIZE,
                   num_classes=cfg.VIT_NUM_CLASSES,num_blocks=cfg.VIT_NUM_BLOCKS,embed_dim=cfg.VIT_EMBED_DIM,
                   n_heads=cfg.VIT_N_HEADS,hidden_dim=cfg.VIT_HIDDEN_DIM,
@@ -40,6 +41,7 @@ def make_vit():
     return vit_cifar
 
 def make_resnet():
+    # Build ResNet with default hyperparams from config
     resnet_cifar=Resnet(num_layers=cfg.RES_NUM_LAYERS,
                   proj_kernel=cfg.RES_PROJ_KERNEL,
                   residual_channels=cfg.RES_RESIDUAL_CHANNELS,
@@ -152,11 +154,19 @@ def train_model(model,dataloaders,num_epochs,model_type="VIT",Device=Device):
 
 
 
+RESULTS_DIR = "results/experiment1"
+
+# Experiment 1: Data efficiency — ViT vs ResNet.
+# Trains both models at 5%, 10%, 25%, 50%, 100% of CIFAR-10 training data.
 def run(data_frac_list=[0.05,0.1,0.25,0.5,1]):
     torch.set_float32_matmul_precision('high')
 
-    vit_accs    = []
-    resnet_accs = []
+    os.makedirs(RESULTS_DIR, exist_ok=True)
+
+    vit_accs      = []
+    resnet_accs   = []
+    vit_losses    = []
+    resnet_losses = []
 
     for frac in data_frac_list:
         print(f"\n{'='*60}")
@@ -164,21 +174,22 @@ def run(data_frac_list=[0.05,0.1,0.25,0.5,1]):
         print(f"{'='*60}")
 
         dataloaders=load_dataloaders(batch_size=batch_size,num_workers=num_workers,data_frac=frac)
-        
+
         vit_cifar=make_vit()
         resnet_cifar=make_resnet()
 
         vit_acc,vit_loss_list = train_model(vit_cifar,dataloaders,num_epochs,model_type="VIT")
-        
         resnet_acc,resnet_loss_list = train_model(resnet_cifar,dataloaders,num_epochs,model_type="RESNET")
-        
+
         vit_accs.append(vit_acc)
         resnet_accs.append(resnet_acc)
+        vit_losses.append(vit_loss_list)
+        resnet_losses.append(resnet_loss_list)
 
         print(f"ViT    best acc: {vit_acc:.4f}")
         print(f"ResNet best acc: {resnet_acc:.4f}")
 
-    # ── Plot ───────────────────────────────────────────────────────────────────
+    # ── Plot 1: accuracy vs data fraction ─────────────────────────────────────
     pct = [f * 100 for f in data_frac_list]
 
     plt.figure(figsize=(8, 5))
@@ -191,15 +202,43 @@ def run(data_frac_list=[0.05,0.1,0.25,0.5,1]):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig("experiment1_accuracy_vs_data.png", dpi=150)
-    plt.show()
-    print("\nPlot saved to experiment1_accuracy_vs_data.png")
+    acc_plot_path = os.path.join(RESULTS_DIR, "experiment1_accuracy_vs_data.png")
+    plt.savefig(acc_plot_path, dpi=150)
+    plt.close()
+    print(f"\nAccuracy plot saved to {acc_plot_path}")
+
+    # ── Plot 2: loss curves per fraction ──────────────────────────────────────
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    for ax, losses, title in zip(axes,
+                                  [vit_losses, resnet_losses],
+                                  ["ViT", "ResNet"]):
+        for frac, loss in zip(data_frac_list, losses):
+            ax.plot(loss, label=f"{frac:.0%}")
+        ax.set_xlabel("Epoch")
+        ax.set_ylabel("Training Loss")
+        ax.set_title(f"{title} Loss Curves")
+        ax.legend()
+        ax.grid(True)
+    plt.tight_layout()
+    loss_plot_path = os.path.join(RESULTS_DIR, "experiment1_loss_curves.png")
+    plt.savefig(loss_plot_path, dpi=150)
+    plt.close()
+    print(f"Loss plot saved to {loss_plot_path}")
+
+    # ── Log results to file ────────────────────────────────────────────────────
+    log_path = os.path.join(RESULTS_DIR, "results.txt")
+    with open(log_path, "w") as f:
+        f.write(f"{'Fraction':>10} | {'ViT Acc':>10} | {'ResNet Acc':>10}\n")
+        f.write("-" * 36 + "\n")
+        for frac, va, ra in zip(data_frac_list, vit_accs, resnet_accs):
+            f.write(f"{frac:>10.0%} | {va:>10.4f} | {ra:>10.4f}\n")
 
     # ── Summary table ─────────────────────────────────────────────────────────
     print(f"\n{'Fraction':>10} | {'ViT Acc':>10} | {'ResNet Acc':>10}")
     print("-" * 36)
     for frac, va, ra in zip(data_frac_list, vit_accs, resnet_accs):
         print(f"{frac:>10.0%} | {va:>10.4f} | {ra:>10.4f}")
+    print(f"\nResults logged to {log_path}")
 
 
 if __name__ == "__main__":
